@@ -223,10 +223,31 @@ class PushTEnv(gym.Env):
                     ),
                 }
             )
+        elif self.obs_type == "pixels_environment_state_agent_pos":
+            self.observation_space = spaces.Dict(
+                {
+                    "pixels": spaces.Box(
+                        low=0,
+                        high=255,
+                        shape=(self.observation_height, self.observation_width, 3),
+                        dtype=np.uint8,
+                    ),
+                    "environment_state": spaces.Box(
+                        low=np.zeros(16),
+                        high=np.full((16,), 512),
+                        dtype=np.float64,
+                    ),
+                    "agent_pos": spaces.Box(
+                        low=np.array([0, 0]),
+                        high=np.array([512, 512]),
+                        dtype=np.float64,
+                    ),
+                }
+            )
         else:
             raise ValueError(
                 f"Unknown obs_type {self.obs_type}. Must be one of [pixels, state, environment_state_agent_pos, "
-                "pixels_agent_pos]"
+                "pixels_agent_pos, pixels_environment_state_agent_pos]"
             )
 
     def _get_coverage(self):
@@ -399,6 +420,12 @@ class PushTEnv(gym.Env):
         elif self.obs_type == "pixels_agent_pos":
             return {
                 "pixels": pixels,
+                "agent_pos": np.array(self.agent.position),
+            }
+        elif self.obs_type == "pixels_environment_state_agent_pos":
+            return {
+                "pixels": pixels,
+                "environment_state": self.get_keypoints(self._block_shapes).flatten(),
                 "agent_pos": np.array(self.agent.position),
             }
 
